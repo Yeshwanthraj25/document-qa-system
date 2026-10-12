@@ -1,0 +1,55 @@
+@startuml RAG_Job_Assistant_Phase1
+!theme plain
+skinparam backgroundColor #FEFEFE
+skinparam classBackgroundColor #F8F8F8
+
+entity "Document" as doc {
+    *id : UUID <<PK>>
+    --
+    filename : VARCHAR(255) <<NOT NULL>>
+    file_size : INTEGER
+    pages : INTEGER
+    file_path : VARCHAR(255)
+    uploaded_by : VARCHAR(255)
+    uploaded_at : TIMESTAMP
+    created_at : TIMESTAMP
+    updated_at : TIMESTAMP
+}
+
+entity "Chunk" as chunk {
+    *id : UUID <<PK>>
+    --
+    *document_id : UUID <<FK>>
+    chunk_number : INTEGER
+    page_number : INTEGER
+    content : TEXT <<NOT NULL>>
+    start_char : INTEGER
+    end_char : INTEGER
+    created_at : TIMESTAMP
+}
+
+entity "Embedding" as embedding {
+    *id : UUID <<PK>>
+    --
+    *chunk_id : UUID <<FK>>
+    vector : vector(1536) <<pgvector>>
+    embedding_model : VARCHAR(100)
+    created_at : TIMESTAMP
+}
+
+entity "ChatMessage" as chat {
+    *id : UUID <<PK>>
+    --
+    *document_id : UUID <<FK>>
+    query : TEXT <<NOT NULL>>
+    answer : TEXT
+    citations : JSONB
+    processing_time_ms : INTEGER
+    created_at : TIMESTAMP
+}
+
+doc ||--o{ chunk : "has many"
+chunk ||--|| embedding : "has one"
+doc ||--o{ chat : "has many"
+
+@enduml

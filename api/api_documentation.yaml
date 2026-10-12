@@ -1,0 +1,626 @@
+openapi: 3.0.0
+info:
+  title: RAG Job Assistant API
+  description: |
+    Document Q&A system with citations using RAG (Retrieval-Augmented Generation).
+    
+    This API handles document ingestion, chunking, embedding generation, retrieval, 
+    and question-answering with source citations.
+  version: 1.0.0
+  contact:
+    name: RAG Job Assistant Team
+    email: support@rag-job-assistant.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:8000
+    description: Local development server
+  - url: https://api.rag-job-assistant.com
+    description: Production server
+
+tags:
+  - name: Health
+    description: System health checks
+  - name: Documents
+    description: Document management (upload, list, delete)
+  - name: Chat
+    description: Chat and Q&A operations
+
+paths:
+  /api/v1/health:
+    get:
+      tags:
+        - Health
+      summary: Health check
+      description: Check if the API is running
+      operationId: health_check
+      responses:
+        '200':
+          description: Server is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: success
+                  code:
+                    type: integer
+                    example: 200
+                  message:
+                    type: string
+                    example: Server is healthy
+
+  /api/v1/documents/upload:
+    post:
+      tags:
+        - Documents
+      summary: Upload a document
+      description: Upload a PDF document for RAG processing
+      operationId: upload_document
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: PDF file to upload
+              required:
+                - file
+      responses:
+        '201':
+          description: Document uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentUploadResponse'
+        '400':
+          description: Invalid file format or size
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error during upload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/documents:
+    get:
+      tags:
+        - Documents
+      summary: List all documents
+      description: Retrieve all uploaded documents with metadata
+      operationId: list_documents
+      parameters:
+        - name: skip
+          in: query
+          description: Number of documents to skip (pagination)
+          schema:
+            type: integer
+            default: 0
+        - name: limit
+          in: query
+          description: Number of documents to return
+          schema:
+            type: integer
+            default: 10
+      responses:
+        '200':
+          description: Documents retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentListResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/documents/{document_id}:
+    get:
+      tags:
+        - Documents
+      summary: Get document details
+      description: Retrieve metadata for a specific document
+      operationId: get_document
+      parameters:
+        - name: document_id
+          in: path
+          required: true
+          description: UUID of the document
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Document details retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DocumentDetailResponse'
+        '404':
+          description: Document not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    
+    delete:
+      tags:
+        - Documents
+      summary: Delete a document
+      description: Delete a document and its embeddings
+      operationId: delete_document
+      parameters:
+        - name: document_id
+          in: path
+          required: true
+          description: UUID of the document
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Document deleted successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SuccessResponse'
+        '404':
+          description: Document not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/chat/query:
+    post:
+      tags:
+        - Chat
+      summary: Query a document
+      description: Ask a question about an uploaded document and get an answer with citations
+      operationId: query_document
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ChatQueryRequest'
+      responses:
+        '200':
+          description: Query processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatQueryResponse'
+        '400':
+          description: Invalid request parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Document not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/chat/history/{document_id}:
+    get:
+      tags:
+        - Chat
+      summary: Get chat history
+      description: Retrieve Q&A history for a specific document
+      operationId: get_chat_history
+      parameters:
+        - name: document_id
+          in: path
+          required: true
+          description: UUID of the document
+          schema:
+            type: string
+            format: uuid
+        - name: skip
+          in: query
+          description: Number of messages to skip
+          schema:
+            type: integer
+            default: 0
+        - name: limit
+          in: query
+          description: Number of messages to return
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Chat history retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatHistoryResponse'
+        '404':
+          description: Document not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    # Base Response Schema
+    SuccessResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [success]
+          example: success
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: Operation successful
+        data:
+          type: object
+          nullable: true
+          example: null
+        errors:
+          type: array
+          items:
+            type: object
+          example: []
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-03-10T09:15:00.000Z"
+        request_id:
+          type: string
+          example: req-c3d4e5f6-g7h8-9012-cdef-3456789012340
+
+    ErrorResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [error]
+          example: error
+        code:
+          type: integer
+          example: 400
+        message:
+          type: string
+          example: Invalid request parameters
+        data:
+          type: object
+          nullable: true
+          example: null
+        errors:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              detail:
+                type: string
+          example:
+            - field: query
+              detail: Query cannot be empty
+        timestamp:
+          type: string
+          format: date-time
+          example: "2025-03-10T09:15:00.000Z"
+        request_id:
+          type: string
+          example: req-c3d4e5f6-g7h8-9012-cdef-3456789012340
+
+    # Document Models
+    DocumentMetadata:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: ent-a1b2c3d4-e5f6-7890-abcd-ef1234567890
+        filename:
+          type: string
+          example: resume.pdf
+        file_size:
+          type: integer
+          example: 245000
+        pages:
+          type: integer
+          example: 2
+        chunks_count:
+          type: integer
+          example: 8
+        uploaded_at:
+          type: string
+          format: date-time
+          example: "2025-03-10T08:30:00.000Z"
+
+    Citation:
+      type: object
+      properties:
+        chunk_id:
+          type: string
+          format: uuid
+          example: chunk-f1e2d3c4-b5a6-7890-1234-567890abcdef
+        document_id:
+          type: string
+          format: uuid
+          example: ent-a1b2c3d4-e5f6-7890-abcd-ef1234567890
+        document_name:
+          type: string
+          example: resume.pdf
+        page_number:
+          type: integer
+          example: 1
+        chunk_text:
+          type: string
+          example: "Languages: Python, JavaScript, SQL, Go, Rust"
+        relevance_score:
+          type: number
+          format: float
+          example: 0.92
+
+    ChatMessage:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          example: msg-a1b2c3d4-e5f6-7890-abcd-ef1234567890
+        document_id:
+          type: string
+          format: uuid
+        query:
+          type: string
+          example: What programming languages are mentioned?
+        answer:
+          type: string
+          example: Python, JavaScript, SQL, Go, and Rust are mentioned in your resume.
+        citations:
+          type: array
+          items:
+            $ref: '#/components/schemas/Citation'
+        created_at:
+          type: string
+          format: date-time
+          example: "2025-03-10T09:15:00.000Z"
+
+    # Request/Response Models
+    DocumentUploadResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [success]
+        code:
+          type: integer
+          example: 201
+        message:
+          type: string
+          example: Document uploaded successfully
+        data:
+          $ref: '#/components/schemas/DocumentMetadata'
+        errors:
+          type: array
+          items: {}
+        timestamp:
+          type: string
+          format: date-time
+        request_id:
+          type: string
+
+    DocumentListResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [success]
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: Documents retrieved successfully
+        data:
+          type: object
+          properties:
+            documents:
+              type: array
+              items:
+                $ref: '#/components/schemas/DocumentMetadata'
+            total_count:
+              type: integer
+              example: 5
+            skip:
+              type: integer
+              example: 0
+            limit:
+              type: integer
+              example: 10
+        errors:
+          type: array
+          items: {}
+        timestamp:
+          type: string
+          format: date-time
+        request_id:
+          type: string
+
+    DocumentDetailResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [success]
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: Document details retrieved successfully
+        data:
+          type: object
+          properties:
+            document:
+              $ref: '#/components/schemas/DocumentMetadata'
+            chunks:
+              type: array
+              items:
+                type: object
+                properties:
+                  chunk_number:
+                    type: integer
+                  page_number:
+                    type: integer
+                  text:
+                    type: string
+        errors:
+          type: array
+          items: {}
+        timestamp:
+          type: string
+          format: date-time
+        request_id:
+          type: string
+
+    ChatQueryRequest:
+      type: object
+      required:
+        - document_id
+        - query
+      properties:
+        document_id:
+          type: string
+          format: uuid
+          example: ent-a1b2c3d4-e5f6-7890-abcd-ef1234567890
+          description: UUID of the document to query
+        query:
+          type: string
+          minLength: 1
+          maxLength: 1000
+          example: What programming languages are mentioned?
+          description: Question about the document
+        top_k:
+          type: integer
+          default: 3
+          minimum: 1
+          maximum: 10
+          description: Number of relevant chunks to retrieve
+
+    ChatQueryResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [success]
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: Query processed successfully
+        data:
+          type: object
+          properties:
+            message_id:
+              type: string
+              format: uuid
+            query:
+              type: string
+            answer:
+              type: string
+            citations:
+              type: array
+              items:
+                $ref: '#/components/schemas/Citation'
+            processing_time_ms:
+              type: integer
+              example: 1250
+        errors:
+          type: array
+          items: {}
+        timestamp:
+          type: string
+          format: date-time
+        request_id:
+          type: string
+
+    ChatHistoryResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          enum: [success]
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: Chat history retrieved successfully
+        data:
+          type: object
+          properties:
+            document_id:
+              type: string
+              format: uuid
+            messages:
+              type: array
+              items:
+                $ref: '#/components/schemas/ChatMessage'
+            total_count:
+              type: integer
+            skip:
+              type: integer
+            limit:
+              type: integer
+        errors:
+          type: array
+          items: {}
+        timestamp:
+          type: string
+          format: date-time
+        request_id:
+          type: string
