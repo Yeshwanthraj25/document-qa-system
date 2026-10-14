@@ -6,7 +6,6 @@ settings = Settings()
 engine = create_async_engine(
      settings.DB_URL,
     echo=False,
-    future=True,
     pool_pre_ping=True)
 
 AsyncSessionLocal = async_sessionmaker(

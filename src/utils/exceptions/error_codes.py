@@ -30,10 +30,11 @@ class ErrorCode(Enum):
     INVALID_FILE_TYPE = (400, "File type not allowed")
     EMPTY_FILE = (400, "Uploaded file is empty")
     FILE_TOO_LARGE =(413,"Over the size limit")
-    PDF_NO_TEXT =(422,"No readable text found in this PDF")
-    PDF_UNREADABLE =(422,"unknown {document_id}")
+    DOCUMENT_NO_TEXT =(422,"No readable text found in this PDF")
+    DOCUMENT_UNREADABLE =(422,"unknown {document_id}")
     INTERNAL_ERROR = (500,"An unexpected error occurred")
     DOCUMENT_NOT_FOUND = (404, "Document not found")
+    DATABASE_ERROR = (500, "A database error occurred")
 
     def __init__(self, http_status: int, message: str):
         self.http_status = http_status

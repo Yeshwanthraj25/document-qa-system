@@ -9,3 +9,6 @@ class AppError(Exception):
     
 class InvalidDocumentError(AppError):
     pass
+
+class RepositoryError(AppError):
+    pass
