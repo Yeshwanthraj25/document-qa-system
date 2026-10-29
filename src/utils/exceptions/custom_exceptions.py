@@ -12,3 +12,11 @@ class InvalidDocumentError(AppError):
 
 class RepositoryError(AppError):
     pass
+
+class DocumentNotFoundError(AppError): 
+    pass
+
+class ServiceError(AppError):
+    pass
+
+class ClientError(AppError): pass 

@@ -43,7 +43,7 @@ class Embedding(Base):
     
     embedding_id = Column(UUID, primary_key=True, default=uuid4)
     chunk_id = Column(UUID, ForeignKey("chunks.chunk_id"), nullable=False)  
-    vector = Column(Vector(1536), nullable=False)
+    vector = Column(Vector(768), nullable=False)
     embedding_model = Column(String(100), nullable=False)
     created_at = Column(DateTime, default=func.now(), nullable=False)
     
@@ -66,14 +66,15 @@ class ChatMessage(Base):
    
     document = relationship("Document", back_populates="chat_messages")
 
-    class ErrorLog(Base):
-        __tablename__ = "error_log"
-        log_id = Column(UUID,primary_key = True,default= "no log data")
-        file_name = Column(String,nullable= False)
-        function_name = Column(String,nullable = False)
-        log_data = Column(String,nullable = False)
-        error_details = Column(Text,nullable = False)
-        request_id = Column(String, nullable=True, index=True)
-        error_code = Column(String, nullable=False)
-        created_at = Column(DateTime,default=func.now())
+class ErrorLog(Base):
+    __tablename__ = "error_log"
+    log_id = Column(UUID,primary_key = True,default= "no log data")
+    file_name = Column(String,nullable= False)
+    function_name = Column(String,nullable = False)
+    log_data = Column(String,nullable = False)
+    error_details = Column(Text,nullable = False)
+    request_id = Column(String, nullable=True, index=True)
+    error_code = Column(String, nullable=False)
+    created_at = Column(DateTime,default=func.now())
+    status_code = Column(Integer, nullable=False)
         

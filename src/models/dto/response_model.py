@@ -1,4 +1,5 @@
-from pydantic import BaseModel, Field,ConfigDict,UUID
+from pydantic import BaseModel, Field,ConfigDict
+from uuid import UUID
 from datetime import datetime
 from typing import Optional
 
@@ -21,3 +22,13 @@ class DocumentMetadata(BaseModel):
     pages:int = Field(description="The no pages there in file will be show")
     chunks_count:int = Field(description="The chunk count will be after the file been chunk")
     uploaded_at:datetime = Field(description="The uploaded time will be shown here")
+
+class Pagination(BaseModel):
+    total_count: int = Field(description="Total number of documents")
+    skip: int = Field(description="Number of documents skipped")
+    limit: int = Field(description="Maximum number of documents returned")
+
+
+class DocumentListData(BaseModel):
+    documents: list[DocumentMetadata]
+    pagination: Pagination
