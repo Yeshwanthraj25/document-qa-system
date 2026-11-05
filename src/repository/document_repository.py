@@ -55,17 +55,18 @@ async def list_documents(
 
 
 async def get_document_with_chunk_count(
-    session: AsyncSession, doc_id: UUID
+    session: AsyncSession, doc_id: UUID | None
 ) -> tuple[Document, int] | None:
     """Same query as above, filtered with .where(Document.doc_id == doc_id).
     Use .first() on the result; return (document, count), or None if missing."""
     try:
             query = (
                  select(Document, func.count(Chunk.chunk_id))
-                 .where(Document.doc_id == doc_id)
                  .outerjoin(Chunk, Chunk.document_id == Document.doc_id)
                  .group_by(Document.doc_id)
                  )
+            if doc_id is not None:
+                query = query.where(Document.doc_id == doc_id)
             row = (await session.execute(query)).first()
             if row is None:
                 return None
@@ -89,3 +90,22 @@ async def delete_document(session: AsyncSession, doc_id: UUID) -> bool:
         await session.rollback()
         raise RepositoryError(ErrorCode.DATABASE_ERROR, "Failed to delete document") from exc
 
+
+async def search_similar_chunks(
+    session: AsyncSession, doc_id: UUID | None, query_vector: list[float], top_k: int
+) -> list[tuple[Chunk, str, float]]:
+    try:
+        distance = Embedding.vector.cosine_distance(query_vector)
+        query = (select(Chunk, Document.filename, distance.label("distance"))
+                .join(Embedding, Embedding.chunk_id == Chunk.chunk_id)
+                .join(Document, Document.doc_id == Chunk.document_id)
+                .order_by(distance).limit(top_k))
+        if doc_id is not None:
+            query = query.where(Chunk.document_id == doc_id)
+        result = await session.execute(query)
+        return list(result.all())
+
+    except SQLAlchemyError as exc:
+        await session.rollback()
+        raise RepositoryError(ErrorCode.DATABASE_ERROR, "Failed to search chunks") from exc
+    

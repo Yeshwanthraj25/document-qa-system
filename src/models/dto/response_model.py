@@ -32,3 +32,18 @@ class Pagination(BaseModel):
 class DocumentListData(BaseModel):
     documents: list[DocumentMetadata]
     pagination: Pagination
+
+
+class Citation(BaseModel):
+    chunk_id: UUID
+    document_id: UUID
+    document_name: str
+    page_number: int
+    chunk_text: str
+    relevance_score: float
+    passage_number: int
+
+class ChatQueryData(BaseModel):
+    query: str
+    answer: str | None
+    citations: list[Citation]

@@ -68,7 +68,7 @@ class ChatMessage(Base):
 
 class ErrorLog(Base):
     __tablename__ = "error_log"
-    log_id = Column(UUID,primary_key = True,default= "no log data")
+    log_id = Column(UUID, primary_key=True, default=uuid4)
     file_name = Column(String,nullable= False)
     function_name = Column(String,nullable = False)
     log_data = Column(String,nullable = False)

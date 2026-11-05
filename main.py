@@ -12,6 +12,7 @@ from src.routes.document import router as health_router
 from src.utils.error_handler import build_error_response
 from src.utils.exceptions.custom_exceptions import AppError
 from src.utils.helper import build_response
+from src.routes.chat_route import router as chat_router
 
 logging.basicConfig(level=logging.INFO)
 logging.getLogger("watchfiles").setLevel(logging.WARNING)  
@@ -28,7 +29,7 @@ app = FastAPI(title="RAG Job Assistant", version="1.0.0", lifespan=lifespan)
 
 app.include_router(documents_router)
 app.include_router(health_router)
-
+app.include_router(chat_router)
 
 @app.middleware("http")
 async def add_request_id(request: Request, call_next):

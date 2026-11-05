@@ -36,6 +36,7 @@ class ErrorCode(Enum):
     DOCUMENT_NOT_FOUND = (404, "Document not found")
     DATABASE_ERROR = (500, "A database error occurred")
     EMBEDDING_FAILED = (502, "Embedding service unavailable") 
+    LLM_FAILED = (502, "Language model unavailable")
 
     def __init__(self, http_status: int, message: str):
         self.http_status = http_status
