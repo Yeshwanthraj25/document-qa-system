@@ -9,6 +9,7 @@ from src.models.dto.response_model import ChatQueryData,Citation
 from src.repository.document_repository import search_similar_chunks
 from src.client.ai_model_invoke import generate_answer
 from src.client.ai_model_invoke import REFUSAL
+from src.utils.helper import is_refusal
 import logging
 
 logger = logging.getLogger(__name__)
@@ -27,6 +28,8 @@ async def query_document(session: AsyncSession, request: ChatQueryRequest) -> Ch
         vectors = await embed_texts([settings.QUERY_PREFIX + request.query])
         query_vector = vectors[0]
         rows = await search_similar_chunks(session, request.document_id, query_vector, request.top_k)
+        if rows:
+            logger.info("Top chunk #%d, score %.4f", rows[0][0].chunk_number, 1 - rows[0][2])
         if not rows or (1 - rows[0][2]) < settings.MIN_RELEVANCE_SCORE:
                     return ChatQueryData(query=request.query, answer= REFUSAL, citations=[])
         citations = [
@@ -43,6 +46,8 @@ async def query_document(session: AsyncSession, request: ChatQueryRequest) -> Ch
                     ]
         chunk_content = [chunk.content for chunk, filename, distance in rows]
         response = await generate_answer(request.query, chunk_content)
+        if is_refusal(response):                                   
+            return ChatQueryData(query=request.query, answer=REFUSAL, citations=[])
         return ChatQueryData(query=request.query, answer=response, citations=citations) 
     except AppError:
         raise

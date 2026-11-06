@@ -38,6 +38,8 @@ uploaded, such as a resume, a job description, or project notes.
 - Do not assume anyone's gender. Use the person's name or "they", never "he" or "she" unless a passage says so.
 - Use the passage's own categories. If a passage lists an item under "Frameworks", do not call it a database.
 - When the question asks for a list, take the items from the passage line or section that matches the question, not from every place a word appears.
+   - Each passage names its source document. Only attribute a fact to a person if the passage
+     it comes from is about that person. Never combine facts from different sources.
 </constraints>
 
 <examples>

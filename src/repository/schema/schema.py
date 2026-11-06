@@ -55,7 +55,7 @@ class ChatMessage(Base):
     __tablename__ = "chat_messages"
     
     chat_id = Column(UUID, primary_key=True, default=uuid4)
-    doc_id = Column(UUID, ForeignKey("documents.doc_id"), nullable=False)  # Added: UUID type
+    doc_id = Column(UUID, ForeignKey("documents.doc_id"), nullable=True)  
     query = Column(Text, nullable=False) 
     answer = Column(Text, nullable=False) 
     citations = Column(JSON, nullable=False)

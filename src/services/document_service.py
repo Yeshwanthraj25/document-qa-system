@@ -7,7 +7,7 @@ from src.models.dto.response_model import DocumentListData, DocumentMetadata,Pag
 from src.repository.document_repository import create_document_with_chunks,delete_document,get_document_with_chunk_count,list_documents
 from src.repository.schema.schema import Document
 from src.settings import settings
-from src.utils.chunking import chunking
+from src.utils.chunking import split_text
 from src.utils.document_loader import load_document
 from src.utils.exceptions.custom_exceptions import AppError,DocumentNotFoundError,InvalidDocumentError,ServiceError
 from src.utils.exceptions.error_codes import ErrorCode
@@ -43,9 +43,9 @@ async def upload_document(
         sections = await run_in_threadpool(load_document, filename, file_bytes)
 
         chunk_rows = []
-        chunk_number = 1  # running number across the whole document
+        chunk_number = 1  
         for page_number, text in sections:
-            for start, end, content in chunking(text):
+            for start, end, content in split_text(text):
                 chunk_rows.append(
                     {
                         "chunk_number": chunk_number,

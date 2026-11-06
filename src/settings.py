@@ -1,5 +1,6 @@
 from pydantic_settings import BaseSettings
 from pydantic import ConfigDict
+from typing import Literal
 
 class Settings(BaseSettings):
     DB_URL: str
@@ -16,6 +17,7 @@ class Settings(BaseSettings):
     LLM_MAX_TOKENS: int = 512
     LLM_TEMPERATURE: float = 0.0
     MIN_RELEVANCE_SCORE:float = 0.45
+    CHUNKING_STRATEGY: Literal["fixed", "recursive"] = "recursive"
     
    
     

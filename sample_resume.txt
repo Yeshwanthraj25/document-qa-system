@@ -1,0 +1,39 @@
+ALEX SAMPLE
+Backend Developer
+alex.sample@example.com | github.com/alex-sample-demo | Sampletown
+
+PROFESSIONAL SUMMARY
+
+Backend developer with hands-on experience building REST APIs in Python. Comfortable with FastAPI, PostgreSQL, SQLAlchemy and Docker. Enjoys turning messy requirements into clean, well-tested services. Looking for an entry-level backend or AI engineering role where I can keep learning and ship useful features.
+
+TECHNICAL SKILLS
+
+Languages: Python, SQL, JavaScript (basic)
+Frameworks: FastAPI, Pydantic, SQLAlchemy, Alembic
+Databases: PostgreSQL, SQLite
+Tools: Git, GitHub, Docker, Postman, pytest, uv
+Concepts: REST API design, JWT authentication, role-based access control, database migrations, layered architecture (routes, services, repositories)
+
+PROJECTS
+
+Employee Attendance and Leave API (personal project)
+Built a REST API for tracking employee attendance and managing leave requests. Employees can check in and check out, apply for leave, and view their leave balance. Managers can approve or reject leave requests for their team. The API uses JWT tokens with three roles: admin, manager and employee. Data is stored in PostgreSQL with Alembic migrations, and every error is written to an error log table with a request identifier for debugging. The code follows a layered structure with separate route, service and repository layers.
+
+Library Book Tracker (learning project)
+Created a small command line application in Python to track borrowed books, due dates and late fees. Used SQLite for storage and wrote unit tests for the fee calculation. Learned how to structure a project into modules and handle bad user input gracefully.
+
+EXPERIENCE
+
+Backend Developer Intern, Example Software Pvt Ltd (six months)
+Worked with a small team on an internal inventory tool. Added new API endpoints, fixed bugs reported by testers, and wrote SQL queries for monthly reports. Improved the response time of the stock list endpoint by adding a database index and removing repeated queries. Took part in code reviews and learned to write clear commit messages.
+
+EDUCATION
+
+Bachelor of Technology in Computer Science, Sample Institute of Technology
+Relevant coursework: data structures, database management systems, operating systems, computer networks.
+
+CERTIFICATIONS AND LEARNING
+
+Completed an online course on Python backend development with FastAPI.
+Completed a SQL course covering joins, indexes and query planning.
+Currently learning retrieval augmented generation and agent frameworks to build an AI-powered document question answering tool.
