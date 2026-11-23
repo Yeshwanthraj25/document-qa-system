@@ -44,6 +44,25 @@ class Citation(BaseModel):
     passage_number: int
 
 class ChatQueryData(BaseModel):
+    message_id: UUID | None = None
     query: str
     answer: str | None
     citations: list[Citation]
+    processing_time_ms: int
+
+
+class ChatMessageData(BaseModel):
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+
+    id: UUID = Field(validation_alias="chat_id")
+    document_id: UUID | None = Field(validation_alias="doc_id")
+    query: str
+    answer: str
+    citations: list[Citation]
+    processing_time_ms: int
+    created_at: datetime
+
+
+class ChatHistoryData(BaseModel):
+    messages: list[ChatMessageData]
+    pagination: Pagination

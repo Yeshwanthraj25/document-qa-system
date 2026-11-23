@@ -236,13 +236,60 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /api/v1/chat/history:
+    get:
+      tags:
+        - Chat
+      summary: Get global or document chat history
+      description: Omit document_id to retrieve global-query history; provide it to filter by document
+      operationId: get_global_or_document_chat_history
+      parameters:
+        - name: document_id
+          in: query
+          required: false
+          description: Optional UUID of a document
+          schema:
+            type: string
+            format: uuid
+        - name: skip
+          in: query
+          description: Number of messages to skip
+          schema:
+            type: integer
+            default: 0
+        - name: limit
+          in: query
+          description: Number of messages to return
+          schema:
+            type: integer
+            default: 20
+      responses:
+        '200':
+          description: Chat history retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatHistoryResponse'
+        '404':
+          description: Document not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   /api/v1/chat/history/{document_id}:
     get:
       tags:
         - Chat
       summary: Get chat history
       description: Retrieve Q&A history for a specific document
-      operationId: get_chat_history
+      operationId: get_document_chat_history
       parameters:
         - name: document_id
           in: path
@@ -395,6 +442,9 @@ components:
         page_number:
           type: integer
           example: 1
+        passage_number:
+          type: integer
+          example: 1
         chunk_text:
           type: string
           example: "Languages: Python, JavaScript, SQL, Go, Rust"
@@ -406,13 +456,14 @@ components:
     ChatMessage:
       type: object
       properties:
-        id:
+        message_id:
           type: string
           format: uuid
           example: msg-a1b2c3d4-e5f6-7890-abcd-ef1234567890
         document_id:
           type: string
           format: uuid
+          nullable: true
         query:
           type: string
           example: What programming languages are mentioned?
@@ -422,11 +473,34 @@ components:
         citations:
           type: array
           items:
-            $ref: '#/components/schemas/Citation'
+            $ref: '#/components/schemas/ChatHistoryCitation'
+        processing_time_ms:
+          type: integer
+          example: 1250
         created_at:
           type: string
           format: date-time
           example: "2025-03-10T09:15:00.000Z"
+
+    ChatHistoryCitation:
+      type: object
+      description: Citation metadata stored in history; chunk text is intentionally omitted
+      properties:
+        chunk_id:
+          type: string
+          format: uuid
+        document_id:
+          type: string
+          format: uuid
+        document_name:
+          type: string
+        page_number:
+          type: integer
+        relevance_score:
+          type: number
+          format: float
+        passage_number:
+          type: integer
 
     # Request/Response Models
     DocumentUploadResponse:
@@ -605,6 +679,7 @@ components:
             document_id:
               type: string
               format: uuid
+              nullable: true
             messages:
               type: array
               items:
